@@ -3,6 +3,7 @@ const nameInput = document.querySelector("#name");
 const emailInput = document.querySelector("#email");
 const form = document.querySelector("form");
 const submitButton = document.querySelector("#addContact");
+const list = document.querySelector("ul");
 
 window.onload = () => {
     let request = window.indexedDB.open('contacts', 1); //Database contacts version 1
@@ -14,6 +15,7 @@ window.onload = () => {
     request.onsuccess = () => {
         console.log("Database opened succesfully the connection");
         db = request.result;
+        getAllData();
     }
 
     // Runs only once. If it's necessary to update the database, it may be deleted
@@ -51,10 +53,49 @@ window.onload = () => {
 
         transaction.oncomplete = () => {
             console.log("Transaction completed with success. Data stored on IndexedDB");
+            getAllData();
         };
 
         transaction.onerror = errors => {
             console.log("Transaction not completed. There are one ore more errors. ", errors);
+        }
+    }
+
+    function getAllData() {
+        // Cleanup the list
+        while (list.firstChild)
+            list.removeChild(list.firstChild);
+
+        // Starts to get the data
+        let objectStore = db.transaction('contacts').objectStore('contacts');
+       
+        objectStore.openCursor().onsuccess = event => {
+            let cursor = event.target.result;
+
+            if(cursor) {
+                let listItem = document.createElement("li");
+                let name = document.createElement("p");
+                let email = document.createElement("p");
+
+                listItem.appendChild(name);
+                listItem.appendChild(email);
+                list.appendChild(listItem);
+
+                name.textContent = cursor.value.name;
+                email.textContent = cursor.value.email;
+                listItem.setAttribute('data-contact-id', cursor.value.id);
+
+                // Re-execute this procedure
+                cursor.continue();  
+            } else {
+                if(!list.firstChild) {
+                    let listItem = document.createElement('li');
+                    listItem.textContent = "No contacts stored";
+                    list.appendChild(listItem);
+                }
+            }
+            
+            console.log("Contacts retrieved from IndexedDB");
         }
     }
 }
