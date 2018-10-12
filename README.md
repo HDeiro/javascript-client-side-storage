@@ -20,6 +20,13 @@ There are a few options on Client-side storage, as an example we have:
     - It can be deleted by browser cleanup policy;
     - Can't be used in browser private mode;
     - The browser defines the limit of the storage;
+
+    There are a few options of wrappers for IndexedDB that provides some syntax sugar and allows to use some features in a easier way, some examples are:
+
+    - LocalForage: https://localforage.github.io/localForage/
+    - Dexie.js: http://dexie.org/
+    - ZangoDB: https://erikolson186.github.io/zangodb/
+    - JSStore: http://jsstore.net/
   
 - ### Service Workers (offline)
 - Cache API
