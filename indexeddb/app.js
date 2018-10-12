@@ -16,7 +16,7 @@ window.onload = () => {
         db = request.result;
     }
 
-    // Runs only once
+    // Runs only once. If it's necessary to update the database, it may be deleted
     request.onupgradeneeded = e => {
         let db = e.target.result;
         let objectStore = db.createObjectStore('contacts', {
@@ -28,5 +28,33 @@ window.onload = () => {
         objectStore.createIndex('email', 'email', {unique: true});
 
         console.log("Database setup is complete");
+    }
+
+    form.onsubmit = addData;
+    function addData(event) {
+        event.preventDefault();
+
+        // Creates a transaction for the adding proccess (everything happens inside a transaction on IndexedDB)
+        let transaction = db.transaction(['contacts'], 'readwrite');
+        // Creates an object store that holds the contacts
+        let objectStore = transaction.objectStore('contacts');
+        // Adds the object to DB
+        let request = objectStore.add({
+            name: nameInput.value,
+            email: emailInput.value
+        });
+
+        request.onsuccess = () => {
+            nameInput.value = "";
+            emailInput.value = "";
+        };
+
+        transaction.oncomplete = () => {
+            console.log("Transaction completed with success. Data stored on IndexedDB");
+        };
+
+        transaction.onerror = errors => {
+            console.log("Transaction not completed. There are one ore more errors. ", errors);
+        }
     }
 }
