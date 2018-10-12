@@ -85,6 +85,12 @@ window.onload = () => {
                 email.textContent = cursor.value.email;
                 listItem.setAttribute('data-contact-id', cursor.value.id);
 
+                let deleteButton = document.createElement('button');
+                listItem.appendChild(deleteButton);
+                deleteButton.textContent = "Delete";
+                deleteButton.onclick = deleteItem;
+                
+
                 // Re-execute this procedure
                 cursor.continue();  
             } else {
@@ -96,6 +102,30 @@ window.onload = () => {
             }
             
             console.log("Contacts retrieved from IndexedDB");
+        }
+    };
+
+    function deleteItem(e) {
+        let contactId = Number(e.target.parentNode.getAttribute('data-contact-id'));
+        
+        let transaction = db.transaction(['contacts'], 'readwrite');
+        let objectStore = transaction.objectStore('contacts');
+        let request = objectStore.delete(contactId);
+
+        transaction.oncomplete = () => {
+            e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+            
+            console.log(`Contact ${contactId} has been deleted`);
+            
+            if(!list.firstChild) {
+                let listItem = document.createElement('li');
+                listItem.textContent = "No contacts stored";
+                list.appendChild(listItem);
+            }
+        };
+
+        transaction.onerror = errors => {
+            console.log("Transaction not completed. There are one ore more errors. ", errors);
         }
     }
 }
